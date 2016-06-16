@@ -1,0 +1,41 @@
+{
+  "author": {
+    "name": "Julien Loutre",
+    "email": "julien@twenty-six-medias.com",
+    "url": "http://www.twenty-six-medias.com/"
+  },
+  "name": "cmarkov",
+  "description": "cmarkov",
+  "version": "1.0.0",
+  "homepage": "https://github.com/26medias/context-aware-markov-chains",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/26medias/context-aware-markov-chains/master/LICENSE"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/26medias/context-aware-markov-chains.git"
+  },
+  "main": "cmarkov.js",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "argcli": "latest",
+    "fs-tool": "latest",
+    "md5-file": "^3.1.0",
+    "natural": "latest",
+    "pos": "^0.3.0",
+    "progress": "^1.1.8",
+    "pstack": "latest",
+    "sqlite3": "^3.1.4",
+    "underscore": "latest"
+  },
+  "readmeFilename": "readme.md",
+  "bugs": {
+    "url": "https://github.com/26medias/context-aware-markov-chains/issues"
+  },
+  "scripts": {}
+}
