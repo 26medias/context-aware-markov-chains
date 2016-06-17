@@ -1,14 +1,16 @@
 var cmarkov	= require('./cmarkov');
 
 var bot = new cmarkov({
-	name:			'southpark2-1-10',
-	depth:			[1,10],
+	name:			'bible-3-3',
+	depth:			[3,3],
 	weight:			1,
-	depthWeight:	4
+	depthWeight:	3,
+	certainty:		0.3,
+	debug:			false
 });
 
-bot.read("southpark2.txt", function(grams) {
+bot.read("bible.txt", function(grams) {
 	//console.log(grams);
 	
-	console.log(">> ", bot.generate("I", 500));
+	console.log(">> ", bot.generate("In the beginning", 200));
 });

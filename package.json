@@ -24,9 +24,11 @@
   },
   "dependencies": {
     "argcli": "latest",
+    "cli-table": "^0.3.1",
     "fs-tool": "latest",
     "md5-file": "^3.1.0",
     "natural": "latest",
+    "neo4j-js": "0.0.8",
     "pos": "^0.3.0",
     "progress": "^1.1.8",
     "pstack": "latest",
