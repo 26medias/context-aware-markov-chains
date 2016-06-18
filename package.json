@@ -28,11 +28,10 @@
     "fs-tool": "latest",
     "md5-file": "^3.1.0",
     "natural": "latest",
-    "neo4j-js": "0.0.8",
     "pos": "^0.3.0",
     "progress": "^1.1.8",
     "pstack": "latest",
-    "sqlite3": "^3.1.4",
+    "seraph": "^0.14.4",
     "underscore": "latest"
   },
   "readmeFilename": "readme.md",

@@ -1,16 +1,20 @@
 var cmarkov	= require('./cmarkov');
 
 var bot = new cmarkov({
-	name:			'bible-3-3',
-	depth:			[3,3],
-	weight:			1,
+	name:			'trump',
+	depth:			[1,5],
+	weight:			2,
 	depthWeight:	3,
-	certainty:		0.3,
+	certainty:		0.5,
 	debug:			false
 });
 
-bot.read("bible.txt", function(grams) {
+//bot.test();
+
+bot.read("trump.txt", function(grams) {
 	//console.log(grams);
-	
-	console.log(">> ", bot.generate("In the beginning", 200));
+	//console.log(">> ", bot.generate("world", 1));
+	bot.generate("I", 500, function(str) {
+		console.log(">>>>> ",str);
+	})
 });
