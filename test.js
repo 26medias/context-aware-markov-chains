@@ -11,7 +11,7 @@ var bot = new cmarkov({
 
 //bot.test();
 
-bot.read("trump.txt", function(grams) {
+bot.read("training-data/trump.txt", function(grams) {
 	//console.log(grams);
 	//console.log(">> ", bot.generate("world", 1));
 	bot.generate("I", 500, function(str) {
