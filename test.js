@@ -13,7 +13,7 @@ var bot = new cmarkov({
 
 //bot.test();
 
-/*
+
 bot.read("training-data/trump.txt", function() {
 	bot.readPOS("training-data/trump.txt", function() {
 		bot.generate("i", 200, function(str) {
@@ -21,14 +21,15 @@ bot.read("training-data/trump.txt", function() {
 		});
 	});
 });
-*/
 
+
+/*
 var start = new Date().getTime();
-bot.generate("I would like to talk today",50000, function(str) {
+bot.generate("Trump",50, function(str) {
 	//console.trace();
 	console.log(str);
 	
 	var end = new Date().getTime();
 	var total =	 (end-start)/(1000*60);
 	console.log("Time: ",total);
-});
+});*/
