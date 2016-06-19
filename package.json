@@ -28,6 +28,7 @@
     "fs-tool": "latest",
     "md5-file": "^3.1.0",
     "natural": "latest",
+    "node-tokenizer": "0.0.0",
     "pos": "^0.3.0",
     "progress": "^1.1.8",
     "pstack": "latest",

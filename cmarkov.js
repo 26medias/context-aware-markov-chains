@@ -8,6 +8,9 @@ var NGrams		= natural.NGrams;
 var pos			= require('pos');
 var tbl			= require('cli-table');
 var seraph		= require("seraph");
+var Tagger		= require("natural").BrillPOSTagger;
+var tokenizer	= require("node-tokenizer");
+var wlist		= require("./js-weighted-list");
 
 var markov = function(options) {
 	this.options	= _.extend({
@@ -20,12 +23,100 @@ var markov = function(options) {
 	}, options);
 }
 
-markov.prototype.test	= function(callback) {
+markov.prototype.tokenize	= function(text) {
+	
+	var cues	= ["?","!",".",",",":",";","\t","\n","\r"];
+	//var cues	= [":"];
+	var tokens	= text.split(' ');
+	
+	//console.log("tokens",tokens);
+	
+	_.each(cues, function(cue) {
+		tokens	= _.map(tokens, function(token) {
+			var parts	= token.split(cue);
+			var l = parts.length;
+			if (l==0) {
+				return token;
+			}
+			var buffer	= [];
+			_.each(parts, function(part, n) {
+				buffer.push(part);
+				if (n<l-1) {
+					buffer.push(cue);
+				}
+			});
+			return buffer;
+		});
+		tokens	= _.flatten(tokens);
+		tokens	= _.filter(tokens, function(item) {
+			return item	!= '';
+		});
+		//console.log("tokens",tokens);
+	});
+	
+	return tokens;
+}
+
+markov.prototype.test	= function() {
 	var scope = this;
 	
-	var tokenizer	= new natural.RegexpTokenizer({pattern: / /});
-	var chain		= tokenizer.tokenize("Thank you so much.  That's so nice.  Isn't he a great guy.  He doesn't get a fair press; he doesn't get it.  It's just not fair.  And I have to tell you I'm here, and very strongly here, because I have great respect for Steve King and have great respect likewise for Citizens United, David and everybody, and tremendous resect for the Tea Party.  Also, also the people of Iowa.  They have something in common.  Hard-working people.  They want to work, they want to make the country great.  I love the people of Iowa.  So that's the way it is.  Very simple. \n\nWith that said, our country is really headed in the wrong direction with a president who is doing an absolutely terrible job.  The world is collapsing around us, and many of the problems we've caused.  Our president is either grossly incompetent, a word that more and more people are using, and I think I was the first to use it, or he has a completely different agenda than you want to know about, which could be possible.  In any event, Washington is broken, and our country is in serious trouble and total disarray.  Very simple.  Politicians are all talk, no action.  They are all talk and no action.  And it's constant; it never ends. ");
-	console.log("chain",chain);
+	var text	= 'I would like to talk today about: how to develop a new foreign policy direction for our country? one that replaces! randomness with purpose, ideology with strategy, and chaos with peace.\n\nIt is time to shake the rust off of America’s foreign policy. It\'s time to invite new voices and new visions into the fold.';
+	
+	var text2	= 'i started — i did it , i was, oh, that first couple of weeks with illegal immigration and mexico and all of this stuff , right ? and all of a sudden , people are coming over , and i say the wall and now they’re starting to look elsewhere for help . i started — i did it , i was , oh , that first couple of weeks with illegal immigration';
+	
+	console.log(this.beautify(text2));
+}
+
+markov.prototype.beautify	= function(text) {
+	// Punctuation
+	var text	= text.replace(new RegExp('\\s(\\.|,|:|;|!|\\?)\\s','gmi'), function(match, punct) {
+		return punct+' ';
+	});
+	// Capitalize
+	var text	= text.replace(new RegExp('(\\.|!|\\?|\\n)(\\s)([a-z])','gmi'), function(match, punct, space, letter) {
+		return punct+space+letter.toUpperCase();
+	});
+	text	= text.substr(0,1).toUpperCase()+text.substr(1);
+	return text;
+}
+
+markov.prototype.test2	= function(callback) {
+	var scope = this;
+	this.open(function() {
+		scope.graph.query("MATCH p=(x:`ngrams-trump` {gram:{x}})-[:then*1..50]->(y:`ngrams-trump` {gram:{y}}) RETURN p LIMIT 50", {x: 'world', y:'trump'}, function(err, result) {
+			if (result) {
+				_.each(result, function(item) {
+					var nodes	= _.map(item.nodes, function(node) {
+						return node.split('/').pop();
+					});
+					
+					var stack	= new pstack();
+					var grams	= [];
+					
+					_.each(nodes, function(node) {
+						stack.add(function(done) {
+							scope.graph.read(node, function(err, node) {
+								if (node) {
+									grams.push(node.gram);
+								}
+								done();
+							});
+						});
+					});
+					
+					stack.start(function() {
+						console.log("----------------------\n",grams.join(' '));
+					});
+					
+					
+					//console.log("nodes",nodes);
+				});
+			}
+			//console.log("result",result);
+		});
+	});
+	
+	
 	return this;
 }
 
@@ -36,9 +127,24 @@ markov.prototype.open	= function(callback) {
 		user:	"neo4j",
 		pass:	"pwd"
 	});
-	scope.graph.constraints.uniqueness.createIfNone('ngrams-'+this.options.name, 'gram', function(err, constraint) {
-		//console.log("constraint: ", constraint); 
-		callback();
+	scope.graph.constraints.uniqueness.createIfNone('ngrams-'+scope.options.name, 'gram', function(err, constraint) {
+		scope.graph.constraints.uniqueness.createIfNone('pos-'+scope.options.name, 'gram', function(err, constraint) {
+			var base_folder = "./node_modules/natural/lib/natural/brill_pos_tagger/data/English";
+			var rules_file = base_folder + "/tr_from_posjs.txt";
+			var lexicon_file = base_folder + "/lexicon_from_posjs.json";
+			var default_category = 'N';
+			
+			var tagger;
+			tagger = new Tagger(lexicon_file, rules_file, default_category, function(error) {
+				if (error) {
+					console.log(error);
+				} else {
+					scope.tagger	= tagger;
+					callback();
+				}
+			});
+			
+		});
 	});
 	
 	return this;
@@ -62,9 +168,9 @@ markov.prototype.read	= function(filename, callback) {
 			fstool.file.read(filename, function(text) {
 				
 				//text	= new pos.Lexer().lex(text);
-				var tokenizer = new natural.RegexpTokenizer({pattern: / /});
-				text	= tokenizer.tokenize(text);
-				
+				/*var tokenizer = new natural.RegexpTokenizer({pattern: / /});
+				text	= tokenizer.tokenize(text);*/
+				text	= scope.tokenize(text);
 				//console.log("text", text);
 				
 				// Generate the n-grams
@@ -206,27 +312,196 @@ markov.prototype.read	= function(filename, callback) {
 	});
 }
 
+markov.prototype.readPOS	= function(filename, callback) {
+	var scope = this;
+	
+	var start = new Date().getTime();
+	
+	this.open(function() {
+		md5File(filename, function (error, sum) {
+			fstool.file.read(filename, function(text) {
+				
+				//text	= new pos.Lexer().lex(text);
+				/*var tokenizer = new natural.RegexpTokenizer({pattern: / /});
+				text	= tokenizer.tokenize(text);*/
+				text	= scope.tokenize(text);
+				
+				text = _.map(scope.tagger.tag(text), function(item) {
+					return item[1];
+				});
+				
+				//console.log("text", text);
+				
+				// Generate the n-grams
+				var grams	= {};
+				var unique	= {};
+				var nodeIndex	= {};
+				
+				
+				var stack_ngram	= new pstack({
+					progress:		'Reading the N-grams...',
+					reportInterval:	100,
+					batch:			10
+				});
+				
+				var stack_rel	= new pstack({
+					progress:		'Mapping...',
+					reportInterval:	100
+				});
+				
+				
+				_.each(_.range(scope.options.depth[0], scope.options.depth[1]+1), function(depth) {
+					
+					console.log("Starting Depth "+depth);
+					
+					console.log("Generating the POS ngrams");
+					
+					grams[depth]	= NGrams.ngrams(text, depth);
+					
+					console.log("Stringification of "+grams[depth].length+" POS ngrams");
+					var ngramObj	= {};
+					_.each(grams[depth], function(item) {
+						ngramObj[item.join('|')] = true;
+					});
+					
+					var uniqueNgams	= _.size(ngramObj);
+					
+					console.log("Graphing");
+					
+					// Save the gram
+					_.each(ngramObj, function(v, gram) {
+						gram	= gram.toLowerCase();
+						stack_ngram.add(function(done) {
+							scope.graph.save({
+								gram:	gram,
+								depth:	depth
+							}, 'pos-'+scope.options.name, function(err, node) {
+								if (err) {
+									// Read it
+									scope.graph.find({
+										gram:	gram,
+										depth:	depth
+									}, false, 'pos-'+scope.options.name, function (err, response) {
+										if (response && response.length > 0) {
+											nodeIndex[gram]	= response[0].id;
+											//console.log("Node:\t\t", "[found]");
+										}
+										done();
+									});
+									return false;
+								} else {
+									//console.log("Node:\t\t", "[created]");
+									nodeIndex[gram]	= node.id;
+									done();
+								}
+							});
+						});
+					});
+					
+					// Process the gram graph
+					_.each(grams[depth], function(str, n) {
+						if (n==0) {
+							return false;
+						}
+						var current		= grams[depth][n-1].join('|').toLowerCase();
+						var next		= grams[depth][n].slice(-1).join('').toLowerCase();
+						
+						stack_rel.add(function(done) {
+							//console.log(">> ",current,' >>> ',next, ' -> ', nodeIndex[current], ' >>> ', nodeIndex[next]);
+							
+							scope.graph.relationships(nodeIndex[current], 'out', 'then', function(err, relationships) {
+								if (err) {
+									//console.log("Relationship:\t", "[failed]");
+									return false;
+								} else {
+									if (relationships) {
+										// Look for the relationship
+										var relationship	 = _.find(relationships, function(rel) {
+											return rel.start == nodeIndex[current] && rel.end == nodeIndex[next];
+										});
+										
+										if (relationship) {
+											// Update the relationship weight
+											relationship.properties.weight += 1;
+											scope.graph.rel.update(relationship, function(err) {
+												if (err) {
+													//console.log("Relationship:\t", "[failed]");
+												}
+												//console.log("Relationship:\t", "[updated]");
+												done();
+											});
+										} else {
+											scope.graph.relate(nodeIndex[current], 'then', nodeIndex[next], {weight:1, ngram:next, idx:nodeIndex[next]}, function(err, relationship) {
+												if (err) {
+													//console.log("Relationship:\t", "[failed]");
+												} else {
+													//console.log("Relationship:\t", "[created]");
+												}
+												done();
+											});
+										}
+											
+									} else {
+										//console.log("Relationship:\t", "[failed]");
+										done();
+									}
+								}
+							});
+							
+						});
+					});
+				});
+				
+				stack_ngram.start(function() {
+					stack_rel.start(function() {
+						//console.log(">>>>>>>>> nodeIndex",nodeIndex);
+						
+						var end = new Date().getTime();
+						
+						
+						console.log("===========================");
+						console.log("== POS Training time: ",(end-start)/(1000*60)," ==");
+						console.log("===========================");
+						
+						callback(grams);
+					});
+				});
+				
+			});
+		});
+	});
+}
+
 
 
 markov.prototype.getNext	= function(chain, callback) {
-	var scope	= this;
-	var ngrams	= {};
-	var nodes	= {};
+	var scope		= this;
+	var ngrams		= {};
+	var nodes		= {};
+	var posngrams	= {};
+	var posnodes	= {};
 	
 	//console.log("chain",chain);
 	
 	this.open(function() {
 		
 		var stack	= new pstack();
-		var buffer	= {};
+		var buffer	= false;
 		
 		
-		// For each ngram depth
+		// Generate the option list, with weights
 		_.each(_.range(scope.options.depth[1], scope.options.depth[0]-1, -1), function(depth) {
 			stack.add(function(done) {
+				if (buffer && depth <= scope.options.lowpri) {
+					//console.log("skiped.");
+					done();
+					return false;
+				}
+				
+				
 				// Generate the ngram to lookup (last N words in the chain)
 				ngrams[depth]	= chain.slice(-depth).join('|').toLowerCase();
-				//console.log(">>>> Depth: ",depth);
+				
 				// Get the nodes
 				//var localNodes	= scope.getNodes(ngrams[depth]);
 				scope.graph.find({
@@ -236,8 +511,15 @@ markov.prototype.getNext	= function(chain, callback) {
 					if (response && response.length>0) {
 						scope.graph.relationships(response[0].id, 'out', 'then', function(err, relationships) {
 							
-							buffer[depth]	= relationships;
-							if (depth<=3 && relationships.length==1) {
+							if (relationships.length==0) {
+								
+							} else {
+								buffer	= true;
+								//console.log(">>>> Depth: ", depth, relationships.length);
+							}
+							
+							//buffer[depth]	= relationships;
+							if (false && depth>=3 && relationships.length==1) {
 								// Only one edge. We should go with it, to keep the structure of i'm, it's, they're...
 								//console.log("Going with ",relationships[0].properties.ngram);
 								nodes	= {};
@@ -258,8 +540,13 @@ markov.prototype.getNext	= function(chain, callback) {
 										}
 									}
 								});
+								if (_.size(nodes)>0) {
+									buffer	= true;
+								}
 								done();
 							}
+							
+							
 						});
 					} else {
 						//console.log("ngram not found: ", ngrams[depth]);
@@ -270,12 +557,109 @@ markov.prototype.getNext	= function(chain, callback) {
 			});
 		});
 		
+		if (scope.options.pos) {
+			// For each node option, build the POS
+			stack.add(function(done) {
+				
+				var substack	= new pstack();
+				
+				// Check the POS for the current chain
+				//console.log(">>",chain);
+				var tags	= _.map(scope.tagger.tag(chain), function(item) {
+					return item[1];
+				});
+				
+				
+				// Generate the option list, with weights
+				_.each(_.range(scope.options.depth[1], scope.options.depth[0]-1, -1), function(depth) {
+					substack.add(function(subdone) {
+						// Generate the ngram to lookup (last N words in the chain)
+						posngrams[depth]	= tags.slice(-depth).join('|').toLowerCase();
+						//console.log(">>>> Depth: ",depth);
+						// Get the nodes
+						//var localNodes	= scope.getNodes(ngrams[depth]);
+						scope.graph.find({
+							gram:	posngrams[depth]
+						}, false, 'pos-'+scope.options.name, function (err, response) {
+							//console.log("response",posngrams[depth], response);
+							if (response && response.length>0) {
+								scope.graph.relationships(response[0].id, 'out', 'then', function(err, relationships) {
+									
+									
+									if (depth>=3 && relationships.length==1) {
+										// Only one edge. We should go with it, to keep the structure of i'm, it's, they're...
+										//console.log("Going with ",relationships[0].properties.ngram);
+										posnodes	= {};
+										posnodes[relationships[0].properties.ngram]	= 1;
+										subdone();
+									} else {
+										//console.log("relationships",posngrams[depth], relationships);
+										_.each(relationships, function(relationship) {
+											
+											if (posnodes[relationship.properties.ngram]) {
+												// No cumulation!
+												//nodes[gramId]	+= count;//*depth*scope.options.depthWeight;
+											} else {
+												if (scope.options.depthWeight) {
+													posnodes[relationship.properties.ngram]	= relationship.properties.weight*Math.pow(depth, scope.options.depthWeight);
+												} else {
+													posnodes[relationship.properties.ngram]	= relationship.properties.weight;
+												}
+											}
+										});
+										subdone();
+									}
+								});
+							} else {
+								//console.log("ngram not found: ", ngrams[depth]);
+								subdone();
+							}
+							
+						});
+					});
+				});
+				
+				// Check the pos structure of each node option
+				_.each(nodes, function(w,k) {
+					substack.add(function(subdone) {
+						// Get the POS tag
+						var text	= chain.slice(0);
+						text.push(k);
+						//console.log("text",text);
+						var tags	= _.map(scope.tagger.tag(text), function(item) {
+							return item[1];
+						});
+						
+						var tag = tags.slice(-1)[0].toLowerCase();
+						
+						//console.log("["+tag+"] ",chain.join(' '),'->',k, posnodes[tag]);
+						if (posnodes[tag]) {
+							nodes[k]	+= posnodes[tag];
+							nodes[k]	/= 2;
+						}
+						subdone();
+					});
+				});
+				
+				
+				
+				substack.start(function() {
+					//console.log("nodes",nodes);
+					//console.log("posnodes",posnodes);
+					//console.log("-------------------------");
+					done();
+				});
+				
+			});
+		}
+		
 		
 		stack.start(function() {
 			
 			
 			if (scope.options.debug) {
 				scope.print_edges(nodes, 'Count');
+				console.log(chain.join('|'));
 			}
 			
 			// Calculate the total
@@ -333,13 +717,25 @@ markov.prototype.getNext	= function(chain, callback) {
 			_.each(nodes, function(p, gramId) {
 				nodes[gramId]	= p/total;
 			});
+			
+			
+			var rn	= Math.random();
+			
+			var _nodes	= _.map(nodes, function(v,k) {return [k,v]});
+			_nodes.sort(function(a,b) {
+				return a[1]-b[1];
+			});
+			
+			var wl	= new wlist(_nodes);
+			
+			
+			var sample	= wl.peek()[0];
 			/*
-			if (scope.options.debug) {
-				scope.print_edges(nodes, 'Probabilities: \033[37m\033[44m'+chain.slice(-3).join(' ')+' ______');
+			if (sample=='.') {
+				scope.print_edges(nodes, 'Count');
 			}
 			*/
-			//console.log("> ", chain.slice(-5), " -> ", nodes);
-			
+			/*
 			var choices	= [];
 			_.each(nodes, function(p, gramId) {
 				var count	= p*100;
@@ -357,6 +753,11 @@ markov.prototype.getNext	= function(chain, callback) {
 				//console.log("sample: ",sample);
 				//console.log("buffer:",JSON.stringify(buffer,null,4));
 			}
+			
+			if (!sample) {
+				//console.log("!!!!!!!",choices);
+			}
+			*/
 			callback(sample);
 		});
 		
@@ -368,8 +769,9 @@ markov.prototype.getNext	= function(chain, callback) {
 markov.prototype.generate	= function(start, count, callback) {
 	var scope	= this;
 	//var chain	= new pos.Lexer().lex(start);
-	var tokenizer	= new natural.RegexpTokenizer({pattern: / /});
-	var chain		= tokenizer.tokenize(start.toLowerCase());
+	/*var tokenizer	= new natural.RegexpTokenizer({pattern: / /});
+	var chain		= tokenizer.tokenize(start.toLowerCase());*/
+	chain	= scope.tokenize(start.toLowerCase());
 	
 	this.addToChain(chain, callback, count);
 	/*
@@ -377,29 +779,23 @@ markov.prototype.generate	= function(start, count, callback) {
 	_.each(_.range(0,count), function(n) {
 		chain.push(scope.getNext(chain));
 	});
-	return scope.cleanup(chain.join(' '));*/
+	return scope.beautify(chain.join(' '));*/
 }
 markov.prototype.addToChain	= function(chain, callback, limit) {
 	var scope	= this;
 	//console.log(">",chain.length,limit);
 	if (chain.length==limit) {
-		callback(scope.cleanup(chain.join(' ')));
+		callback(scope.beautify(chain.join(' ')));
 	} else {
 		this.getNext(chain, function(ngram) {
+			if (!ngram) {
+				callback(scope.beautify(chain.join(' ')));
+				return false;
+			}
 			chain.push(ngram);
 			scope.addToChain(chain, callback, limit);
 		});
 	}
-}
-markov.prototype.cleanup	= function(text) {
-	var scope	= this;
-	/*text	= text.replace(new RegExp(' \. ','gmi'), '. ');
-	text	= text.replace(new RegExp(' \' ','gmi'), '\'');
-	text	= text.replace(new RegExp(' ! ','gmi'), '!');
-	text	= text.replace(new RegExp(' , ','gmi'), ', ');
-	text	= text.replace(new RegExp(' : ','gmi'), ': ');
-	text	= text.replace(new RegExp(' ; ','gmi'), '; ');*/
-	return text;
 }
 
 markov.prototype.print_edges	= function(nodes, title) {
@@ -435,3 +831,25 @@ markov.prototype.table	= function(array, cols) {
 }
 
 module.exports = markov;
+
+
+/*
+
+MATCH p=(x:`ngrams-trump` {gram:'obama'})-[:then*1..20]->(y:`ngrams-trump` {gram:'world'})
+RETURN p
+
+
+MATCH p=shortestPath((x:`ngrams-trump` {gram:'obama'})-[:then*1..20]->(y:`ngrams-trump` {gram:'clinton'}))
+RETURN p
+
+MATCH p=(x:`ngrams-trump` {gram:'obama'})-[:then*1..5]->(y:`ngrams-trump` {gram:'clinton'})
+RETURN p LIMIT 50
+
+
+MATCH (x:`ngrams-trump` {gram:'obama'})-[:then*1..5]->()-[:TO|:CC|:BCC]->(person)
+RETURN distinct person
+
+MATCH p=(x:`ngrams-trump` {gram:'obama'})-[:then*1..5]->(y:`ngrams-trump` {gram:'clinton'})
+RETURN  p AS shortestPath, reduce(weight=0, r in rels : weight+r.weight) AS totalWeight
+
+*/
