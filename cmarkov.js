@@ -565,7 +565,7 @@ markov.prototype.getNext	= function(chain, callback) {
 				
 				// Check the POS for the current chain
 				//console.log(">>",chain);
-				var tags	= _.map(scope.tagger.tag(chain), function(item) {
+				var tags	= _.map(scope.tagger.tag(chain.slice(-20)), function(item) {
 					return item[1];
 				});
 				
@@ -626,7 +626,7 @@ markov.prototype.getNext	= function(chain, callback) {
 						var text	= chain.slice(0);
 						text.push(k);
 						//console.log("text",text);
-						var tags	= _.map(scope.tagger.tag(text), function(item) {
+						var tags	= _.map(scope.tagger.tag(text.slice(-10)), function(item) {
 							return item[1];
 						});
 						

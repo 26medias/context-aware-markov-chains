@@ -118,6 +118,11 @@ Finally, I'd like to use a pre-trained word2vec to calculate the vector distance
 
 ## Example ##
 
+After training the algorithm on a South Park script, I generate a new script from scratch.
+
+[See the script here.](south-park.md)
+
+
 I trained the algorithm overnight on a text file containing many of Trump's speeches.
 
 I got it started using simply "I" as input.

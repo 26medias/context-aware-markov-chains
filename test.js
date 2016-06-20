@@ -16,7 +16,7 @@ var bot = new cmarkov({
 
 bot.read("training-data/trump.txt", function() {
 	bot.readPOS("training-data/trump.txt", function() {
-		bot.generate("i", 200, function(str) {
+		bot.generate("I would like to talk today about", 200, function(str) {
 			console.log(str);
 		});
 	});
@@ -25,11 +25,12 @@ bot.read("training-data/trump.txt", function() {
 
 /*
 var start = new Date().getTime();
-bot.generate("Trump",50, function(str) {
+bot.generate("I would like to talk today about", 200, function(str) {
 	//console.trace();
 	console.log(str);
 	
 	var end = new Date().getTime();
 	var total =	 (end-start)/(1000*60);
 	console.log("Time: ",total);
-});*/
+});
+*/
