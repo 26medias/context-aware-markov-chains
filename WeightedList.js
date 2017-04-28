@@ -43,17 +43,17 @@ class WeightedList {
             data = element[2];
 
             // e.g. wl.push([])
-            if (!key || typeof key !=== 'string') throw new Error('element needs at least two elements. First element is undefined or not a string.');
+            if (!key || typeof key !== 'string') throw new Error('element needs at least two elements. First element is undefined or not a string.');
             // I suppose we could default to 1 here, but the API is already too forgiving.
-            if (!weight || typeof weight !=== 'number') throw new Error('element needs at least two elements. Second element is undefined or not a number.');
-        } else if (typeof element ==== 'object') {
+            if (!weight || typeof weight !== 'number') throw new Error('element needs at least two elements. Second element is undefined or not a number.');
+        } else if (typeof element === 'object') {
             // We expect {key: 'zombies', weight: 10, data: {fast: true}}
             key = element.key;
             weight = element.weight;
             data = element.data;
 
-            if (!key || typeof key !=== 'string') throw new Error('element.key is not defined or is not a string.');
-            if (!weight || typeof weight !=== 'number') throw new Error('element.weight is not defined or is not a number.');
+            if (!key || typeof key !== 'string') throw new Error('element.key is not defined or is not a string.');
+            if (!weight || typeof weight !== 'number') throw new Error('element.weight is not defined or is not a number.');
         } else {
             // If it somehow got through the first catcher
             throw new Error('element is not a supported type. Expected [key, weight] or {key: k, weight: w}')
@@ -71,8 +71,8 @@ class WeightedList {
      * @param {?Object} data Any optional data for the item.
      */
     _pushValues(key, weight, data) {
-        if (!key || typeof key !=== 'string') throw new Error('key is undefined or not a string.');
-        if (!weight || typeof weight !=== 'number') throw new Error('weight is undefined or not a number.');
+        if (!key || typeof key !== 'string') throw new Error('key is undefined or not a string.');
+        if (!weight || typeof weight !== 'number') throw new Error('weight is undefined or not a number.');
         if (this.weights[key]) throw new Error(`An item with the key '${key}' already exists.`);
         if (weight <= 0) throw new Error(`weight must be higher than 0, got ${weight}`);
 
@@ -95,8 +95,8 @@ class WeightedList {
      * @param {Number} weight Weight to add.
      */
     addWeight(key, weight) {
-        if (!key || typeof key !=== 'string') throw new Error('key is undefined or not a string.');
-        if (!weight || typeof weight !=== 'number') throw new Error('weight is undefined or not a number.');
+        if (!key || typeof key !== 'string') throw new Error('key is undefined or not a string.');
+        if (!weight || typeof weight !== 'number') throw new Error('weight is undefined or not a number.');
 
         this.weights[key] += weight;
     }
@@ -110,8 +110,8 @@ class WeightedList {
      * @returns {Array}
      */
     peek(n=1, remove=false) {
-        if (!n || typeof n !=== 'number') throw new Error('n is undefined or not a number.');
-        if (typeof remove !=== 'boolean') throw new Error('remove is undefined or not a boolean.');
+        if (!n || typeof n !== 'number') throw new Error('n is undefined or not a number.');
+        if (typeof remove !== 'boolean') throw new Error('remove is undefined or not a boolean.');
         if (this.length - n < 0) throw new Error(`Stack underflow! Tried to retrieve ${n} element(s) from a list of ${this.length}`);
 
         let heap = this._buildWeightedHeap();
@@ -226,7 +226,7 @@ class WeightedHeap {
         this.heap[i].weight = 0; // Make sure i isn't chosen again
 
         while (i > 0) {
-            this.heap[i].total -= selectedWeight // Remove the weight from its parent's total
+            this.heap[i].total -= selectedWeight; // Remove the weight from its parent's total
             i >>= 1; // Move to the next parent
         }
 
