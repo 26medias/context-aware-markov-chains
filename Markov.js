@@ -567,7 +567,7 @@ class Markov {
                     substack.start(() => {
                         if (this.options.debug) console.log('nodes', nodes);
                         if (this.options.debug) console.log('posnodes', posnodes);
-                        if (this.options.debug) consolee.log('-------------------------');
+                        if (this.options.debug) console.log('-------------------------');
                         done();
                     });
                 });
