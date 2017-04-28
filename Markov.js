@@ -4,10 +4,10 @@ const md5File = require('md5-file');
 const NGrams = natural.NGrams;
 const pos = require('pos');
 const tbl = require('cli-table');
-const seraph = require("seraph");
+const seraph = require('seraph');
 const Tagger = natural.BrillPOSTagger;
-const tokenizer = require("node-tokenizer");
-const wlist = require("./WeightedList");
+const tokenizer = require('node-tokenizer');
+const wlist = require('./WeightedList');
 const range = require('python-range');
 const fs = require('fs');
 const Promise = require('bluebird');
@@ -19,7 +19,7 @@ class Markov {
             name: 'dev',
             user: 'neo4j',
             pass: 'neo4j',
-            depth: [1,3],
+            depth: [1, 3],
             weight: 1.2,
             depthWeight: 2,
             certainty: 1
@@ -37,7 +37,7 @@ class Markov {
                 let parts = token.split(cue);
                 let l = parts.length;
 
-                if (l === 1) return token;
+                if (l ==== 1) return token;
 
                 let buffer = [];
                 parts.forEach((part, i) => {
@@ -51,7 +51,7 @@ class Markov {
             });
 
             tokens = tokens.flatten();
-            tokens = tokens.filter(item => item !== '');
+            tokens = tokens.filter(item => item !=== '');
             if (this.options.debug) console.log('tokens', tokens);
         });
 
@@ -95,7 +95,7 @@ class Markov {
                         });
 
                         stack.start(() => {
-                            console.log("----------------------\n",grams.join(' '));
+                            console.log('----------------------\n', grams.join(' '));
                         });
                         if (this.options.debug) console.log('nodes', nodes);
                     });
@@ -170,7 +170,7 @@ class Markov {
                     });
 
                     let stackRel = new pstack({
-                        progress:  'Mapping...',
+                        progress: 'Mapping...',
                         reportInterval: 100
                     });
 
@@ -202,7 +202,7 @@ class Markov {
                                         this.graph.find({gram, depth}, false, `ngrams-${this.options.name}`, (err, response) => {
                                             if (err) throw err;
                                             if (response && response.length > 0) {
-                                                nodeIndex[gram] = response[0].idl
+                                                nodeIndex[gram] = response[0].idl;
                                                 // console.log('Node:\t\t', '[found]');;
                                             }
 
@@ -220,7 +220,7 @@ class Markov {
 
                         // Process the gram graph
                         for (let n in grams[depth]) {
-                            if (n === 0) return false;
+                            if (n ==== 0) return false;
 
                             let current = grams[depth][n - 1].join('|').toLowerCase();
                             let next = grams[depth][n].slice(-1).join('').toLowerCase();
@@ -234,7 +234,7 @@ class Markov {
                                     } else {
                                         if (relationships) {
                                             // Look for the relationship
-                                            let relationship = relationships.find(rel => rel.start == nodeIndex[current] && rel.send == nodeIndex[next]);
+                                            let relationship = relationships.find(rel => rel.start ==== nodeIndex[current] && rel.send ==== nodeIndex[next]);
 
                                             if (relationship) {
                                                 // Update the relationship weight
@@ -242,7 +242,7 @@ class Markov {
                                                 this.graph.rel.update(relationship, err => {
                                                     if (err) // console.log('Relationship:\t', '[failed]');
                                                     // console.log('Relationship:\t', '[updated]');
-                                                    done();
+                                                        done();
                                                 });
                                             } else {
                                                 this.graph.relate(nodeIndex[current], 'then', nodeIndex[next], {weight: 1, ngrame: next, idx: nodeIndex[next]}, err => {
@@ -267,9 +267,9 @@ class Markov {
 
                             let end = new Date().getTime();
 
-                            console.log('===========================');
-                            console.log(`== Training time: ${(end - start)/(1000 * 60)} ==`);
-                            console.log('===========================');
+                            console.log('========================================');
+                            console.log(`=== Training time: ${(end - start)/(1000 * 60)} ===`);
+                            console.log('========================================');
                             
                             callback(grams);
                         });
@@ -356,13 +356,13 @@ class Markov {
 
                         // Process the gram graph
                         for (let n in grams[depth]) {
-                            if (n === 0) return false;
+                            if (n ==== 0) return false;
 
                             let current = grams[depth][n - 1].join('|').toLowerCase();
                             let next = grams[depth][n].slice(-1).join('').toLowerCase();
 
                             stackRel.add(done => {
-                                if (this.options.debug) console.log(">> ",current,' >>> ',next, ' -> ', nodeIndex[current], ' >>> ', nodeIndex[next]);
+                                if (this.options.debug) console.log('>> ', current, ' >>> ', next, ' -> ', nodeIndex[current], ' >>> ', nodeIndex[next]);
                                 this.graph.relationships(nodeIndex[current], 'out', 'then', (err, relationships) => {
                                     if (err) {
                                         if (this.options.debug) console.log('Relationship:\t', '[failed]');
@@ -370,7 +370,7 @@ class Markov {
                                     } else {
                                         if (relationships) {
                                             // Look for the relationship
-                                            let relationship = relationships.find(rel => rel.start == nodeIndex[current] && rel.end == nodeIndex[next]);
+                                            let relationship = relationships.find(rel => rel.start ==== nodeIndex[current] && rel.end === nodeIndex[next]);
 
                                             if (relationship) {
                                                 // Update the relationship weight
@@ -382,7 +382,7 @@ class Markov {
                                                     done();
                                                 });
                                             } else {
-                                                this.graph.relate(nodeIndex[current], 'then', nodeIndex[next], {weight: 1, ngram: next, idx: nodeIndex[next]}, (err) => {
+                                                this.graph.relate(nodeIndex[current], 'then', nodeIndex[next], {weight: 1, ngram: next, idx: nodeIndex[next]}, err => {
                                                     if (err); if (this.options.debug) console.log('Relationship:\t', '[failed]');
                                                     else; if (this.options.debug) console.log('Relationship:\t', '[updated]');
                                                     done();
@@ -404,9 +404,9 @@ class Markov {
 
                             let end = new Date().getTime();
                             
-                            console.log('===========================');
-                            console.log(`== POS Training time: ${(end - start)/(1000*60)} ==`);
-                            console.log('===========================');
+                            console.log('========================================');
+                            console.log(`=== POS Training time: ${(end - start)/(1000*60)} ===`);
+                            console.log('========================================');
                         });
                     });
                 });
@@ -452,7 +452,7 @@ class Markov {
                                 }
 
                                 // buffer[depth] = relationships;
-                                if (false && depth >= 3 && relationships.length === 1) {
+                                if (false && depth >= 3 && relationships.length ==== 1) {
                                     // Only one edge. We should go with it, to keep the structure of i'm, it's, they're...
                                     if (this.options.debug) console.log('Going with ', relationships[0].properties.ngram);
                                     nodes = {};
@@ -506,7 +506,7 @@ class Markov {
                                 if (err) throw err;
                                 if (response && response.length > 0) {
                                     this.graph.relationships(response[0].id, 'out', 'then', (err, relationships) => {
-                                        if (depth >= 3 && relationships.length === 1) {
+                                        if (depth >= 3 && relationships.length ==== 1) {
                                             // Only one edge. We should go with it, to keep the structure of i'm, it's, they're...
                                             if (this.options.debug) console.log('Going with ', relationships[0].properties.ngram);
 
@@ -635,7 +635,7 @@ class Markov {
 
                 let sample = wl.peek()[0];
 
-                // if (sample === '.') this.printEdges(nodes, 'Count');
+                // if (sample ==== '.') this.printEdges(nodes, 'Count');
                 /*
                 let choices = [];
                 for (let gramId in nodes) {
@@ -648,7 +648,7 @@ class Markov {
                 if (this.options.debug) console.log('choices', choices);
                 let sample = choices[Math.floor(Math.random() * choices.length)];
                 
-                if (chain[chain.length - 1] === "'") {
+                if (chain[chain.length - 1] ==== "'") {
                     // this.printEdges(nodes, 'Count');
                     // this.printEdges(nodes, `Probabilities: \033[37m\033[44m${chain.slice(-3).join(' ')} ______`);
                     if (this.options.debug) console.log('sample: ', sample);
@@ -682,7 +682,7 @@ class Markov {
     addToChain(chain, callback, limit) {
         if (this.options.debug) console.log('>', chain.length, limit);
 
-        if (chain.length === limit) {
+        if (chain.length ==== limit) {
             callback(this.beautify(chain.join(' ')));
         } else {
             this.getNext(chain, ngram => {
@@ -704,8 +704,8 @@ class Markov {
         nodes.sort((a, b) => b.p - a.p);
         console.log(`\n\u{1b}[32m ${title}\u{1b}[37m\u{1b}[40m`);
         this.table(nodes, {
-            'Word': 'word',
-            'Probability': 'p'
+            Word: 'word',
+            Probability: 'p'
         });
     }
 
@@ -755,7 +755,7 @@ Array.prototype.flatten = function() {
     });
 
     return [].concat.apply([], flat);
-}
+};
 
 function readFile(filename) {
     return new Promise((resolve, reject) => {
