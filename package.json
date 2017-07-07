@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "argcli": "latest",
+    "brill-pos-tagger": "0.0.4",
     "cli-table": "^0.3.1",
     "fs-tool": "latest",
     "md5-file": "^3.1.0",
