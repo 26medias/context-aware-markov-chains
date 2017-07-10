@@ -8,7 +8,8 @@ var NGrams		= natural.NGrams;
 var pos			= require('pos');
 var tbl			= require('cli-table');
 var seraph		= require("seraph");
-var Tagger		= require("natural").BrillPOSTagger;
+// var Tagger		= require("natural").BrillPOSTagger;
+var Tagger      = require("brill-pos-tagger");
 var tokenizer	= require("node-tokenizer");
 var wlist		= require("./js-weighted-list");
 
@@ -60,9 +61,9 @@ markov.prototype.tokenize	= function(text) {
 markov.prototype.test	= function() {
 	var scope = this;
 	
-	var text	= 'I would like to talk today about: how to develop a new foreign policy direction for our country? one that replaces! randomness with purpose, ideology with strategy, and chaos with peace.\n\nIt is time to shake the rust off of America’s foreign policy. It\'s time to invite new voices and new visions into the fold.';
+	var text	= 'I would like to talk today about: how to develop a new foreign policy direction for our country? one that replaces! randomness with purpose, ideology with strategy, and chaos with peace.\n\nIt is time to shake the rust off of Americaï¿½s foreign policy. It\'s time to invite new voices and new visions into the fold.';
 	
-	var text2	= 'i started — i did it , i was, oh, that first couple of weeks with illegal immigration and mexico and all of this stuff , right ? and all of a sudden , people are coming over , and i say the wall and now they’re starting to look elsewhere for help . i started — i did it , i was , oh , that first couple of weeks with illegal immigration';
+	var text2	= 'i started ï¿½ i did it , i was, oh, that first couple of weeks with illegal immigration and mexico and all of this stuff , right ? and all of a sudden , people are coming over , and i say the wall and now theyï¿½re starting to look elsewhere for help . i started ï¿½ i did it , i was , oh , that first couple of weeks with illegal immigration';
 	
 	console.log(this.beautify(text2));
 }
