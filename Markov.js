@@ -5,7 +5,7 @@ const NGrams = natural.NGrams;
 const pos = require('pos');
 const tbl = require('cli-table');
 const seraph = require('seraph');
-const Tagger = require("brill-pos-tagger");
+const Tagger = require('brill-pos-tagger');
 const tokenizer = require('node-tokenizer');
 const wlist = require('./WeightedList');
 const range = require('python-range');
@@ -61,9 +61,9 @@ class Markov {
     test() {
         let text = 'I would like to talk today about: how to develop a new foreign policy direction for our country? one that replaces! randomness with purpose, ideology with strategy, and chaos with peace.\n\nIt is time to shake the rust off of America�s foreign policy. It\'s time to invite new voices and new visions into the fold.';
         let text2	= 'i started � i did it , i was, oh, that first couple of weeks with illegal immigration and mexico and all of this stuff , right ? and all of a sudden , people are coming over , and i say the wall and now they�re starting to look elsewhere for help . i started � i did it , i was , oh , that first couple of weeks with illegal immigration';
-  	
-  	console.log(this.beautify(text2));
-  }
+	
+        console.log(this.beautify(text2));
+    }
  /* MATCH p =(x:`ngrams-trump` {gram:'obama'})-[:then*1..5]->(y:`ngrams-trump` {gram:'clinton'})
   RETURN  p AS shortestPath, reduce(weight=0, r in rels : weight+r.weight) AS totalWeight  
     console.log(this.beautify(text2)); */
@@ -154,7 +154,7 @@ class Markov {
                     return false;
                 }*/
                 
-                fstool.file.read(filename, text => {
+                fs.readFileSync(filename, text => {
                     /* text = new pos.Lexer().lex(test);
                     let tokenizer = new natural.RegexpTokenizer({pattern: / /});
                     text = tokenizer.tokenize(text);*/
