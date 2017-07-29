@@ -771,3 +771,5 @@ function readFile(filename) {
         });
     });
 }
+
+module.exports = Markov;
