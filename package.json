@@ -26,19 +26,24 @@
     "argcli": "latest",
     "brill-pos-tagger": "0.0.4",
     "cli-table": "^0.3.1",
-    "fs-tool": "latest",
     "md5-file": "^3.1.0",
     "natural": "latest",
     "node-tokenizer": "0.0.0",
     "pos": "^0.3.0",
-    "progress": "^1.1.8",
     "pstack": "latest",
     "seraph": "^0.14.4",
-    "underscore": "latest"
+    "python-range": "0.3.0",
+    "bluebird": "latest"
   },
   "readmeFilename": "readme.md",
   "bugs": {
     "url": "https://github.com/26medias/context-aware-markov-chains/issues"
   },
-  "scripts": {}
+  "scripts": {},
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "eslint": "^3.19.0",
+    "eslint-config-defaults": "^9.0.0",
+    "eslint-plugin-react": "^6.10.3"
+  }
 }

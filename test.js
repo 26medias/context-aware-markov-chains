@@ -1,36 +1,21 @@
-var cmarkov	= require('./cmarkov');
+const Markov = new (require('./Markov'))();
 
-var bot = new cmarkov({
-	name:			'trump',
-	depth:			[1,5],
-	lowpri:			3,
-	weight:			1,
-	depthWeight:	1,
-	certainty:		0.1,
-	pos:			true,
-	debug:			false
+const readMe = './training-data/bible.txt';
+const bot = new Markov({
+    name: 'bible',
+    depth: [1, 5],
+    lowpri: 3,
+    weight: 1,
+    depthWeight: 1,
+    certainty: 0.1,
+    pos: true,
+    debug: true
 });
 
-//bot.test();
-
-
-bot.read("training-data/trump.txt", function() {
-	bot.readPOS("training-data/trump.txt", function() {
-		bot.generate("I would like to talk today about", 200, function(str) {
-			console.log(str);
-		});
-	});
+bot.read(readMe, () => {
+    console.log('read file');
+    bot.readPOS(readMe, () => {
+        console.log('read pos');
+        bot.generate('god', 200, console.log);
+    });
 });
-
-
-/*
-var start = new Date().getTime();
-bot.generate("I would like to talk today about", 200, function(str) {
-	//console.trace();
-	console.log(str);
-	
-	var end = new Date().getTime();
-	var total =	 (end-start)/(1000*60);
-	console.log("Time: ",total);
-});
-*/
