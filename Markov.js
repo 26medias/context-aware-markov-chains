@@ -37,7 +37,7 @@ class Markov {
                 let parts = token.split(cue);
                 let l = parts.length;
 
-                if (l ==== 1) return token;
+                if (l === 1) return token;
 
                 let buffer = [];
                 parts.forEach((part, i) => {
@@ -51,7 +51,7 @@ class Markov {
             });
 
             tokens = tokens.flatten();
-            tokens = tokens.filter(item => item !=== '');
+            tokens = tokens.filter(item => item !== '');
             if (this.options.debug) console.log('tokens', tokens);
         });
 
@@ -64,15 +64,9 @@ class Markov {
   	
   	console.log(this.beautify(text2));
   }
- @@ -852,4 +853,4 @@ RETURN distinct person
-  MATCH p=(x:`ngrams-trump` {gram:'obama'})-[:then*1..5]->(y:`ngrams-trump` {gram:'clinton'})
-  RETURN  p AS shortestPath, reduce(weight=0, r in rels : weight+r.weight) AS totalWeight
-  
- -*/ 
- +*/
-
-
-        console.log(this.beautify(text2));
+ /* MATCH p =(x:`ngrams-trump` {gram:'obama'})-[:then*1..5]->(y:`ngrams-trump` {gram:'clinton'})
+  RETURN  p AS shortestPath, reduce(weight=0, r in rels : weight+r.weight) AS totalWeight  
+    console.log(this.beautify(text2)); */
     }
 
     beautify(text) {
