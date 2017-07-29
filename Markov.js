@@ -67,7 +67,6 @@ class Markov {
  /* MATCH p =(x:`ngrams-trump` {gram:'obama'})-[:then*1..5]->(y:`ngrams-trump` {gram:'clinton'})
   RETURN  p AS shortestPath, reduce(weight=0, r in rels : weight+r.weight) AS totalWeight  
     console.log(this.beautify(text2)); */
-    }
 
     beautify(text) {
         text = text.replace(/\s(\.|,|:|;|!|\?)\s/gmi, (match, punc) => punc + ' ');
