@@ -194,7 +194,7 @@ class WeightedHeap {
         for (let i in items) {
             let weight = items[i][1];
             let value = items[i][0];
-            this.heap.push(new HeadNode(weight, value, weight));
+            this.heap.push(new this.HeadNode(weight, value, weight));
         }
 
         // Now go through the heap and add each node's weight to its parent
@@ -236,4 +236,4 @@ class WeightedHeap {
 
 // NB: another binary heap implementation is at http://eloquentjavascript.net/appendix2.html
 
-module.exports = WeightedList;
+module.exports = {WeightedList, HeapNode};
