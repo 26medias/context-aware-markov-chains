@@ -1,4 +1,4 @@
-const Markov = require('./Markov');
+const Markov = new(require('./Markov'));
 
 const readMe = './training-data/bible.txt';
 const bot = new Markov({

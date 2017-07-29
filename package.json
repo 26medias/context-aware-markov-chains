@@ -23,6 +23,8 @@
     "node": "*"
   },
   "dependencies": {
+    "argcli": "latest",
+    "brill-pos-tagger": "0.0.4",
     "cli-table": "^0.3.1",
     "md5-file": "^3.1.0",
     "natural": "latest",
